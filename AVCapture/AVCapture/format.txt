@@ -1,0 +1,5 @@
+wFormatTag 		is fffe
+nChannels 		is 2
+nSamplesPerSec 	is 44100
+nAvgBytesPerSec is 176400
+wBitsPerSample 	is 16

@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>FlodCloudWidget</class>
+ <widget class="QWidget" name="FlodCloudWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>303</width>
+    <height>61</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>FlodCloudWidget</string>
+  </property>
+  <widget class="QPushButton" name="btn_class">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>100</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>上课</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_demostrate">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>0</y>
+     <width>100</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>演示</string>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="btn_stuDemostrate">
+   <property name="geometry">
+    <rect>
+     <x>200</x>
+     <y>0</y>
+     <width>100</width>
+     <height>61</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>学生演示</string>
+   </property>
+  </widget>
+ </widget>
+ <layoutdefault spacing="6" margin="11"/>
+ <resources/>
+ <connections/>
+</ui>
