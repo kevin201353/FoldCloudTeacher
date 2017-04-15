@@ -23,7 +23,7 @@ stulist::stulist(QWidget *parent) :
     ui->btnStuClose->setStyleSheet("QPushButton{border-image: url(:/images/x.png);}"
                             "QPushButton:pressed{border-image: url(:/images/x.png);}");
     connect(ui->btnStuClose, SIGNAL(clicked(bool)), this, SLOT(exit_widget()));
-    m_mytableview = (CMytableview *)ui->stutableView;
+    m_mytableview = static_cast<CMytableview*>(ui->stutableView);
     m_mytableview->horizontalHeader()->hide();
     m_ntype = 0;
 }

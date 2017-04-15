@@ -76,6 +76,8 @@ FlodCloudWidget::FlodCloudWidget(QWidget *parent) :
     m_myProcess = new QProcess();
     m_myProcess->startDetached(str_av, QStringList(str_av));
     writeLogFile(QtDebugMsg, str_av);
+    m_messageBox = new MessageBox();
+    m_messageBox->hide();
 }
 
 FlodCloudWidget::~FlodCloudWidget()
@@ -130,6 +132,11 @@ FlodCloudWidget::~FlodCloudWidget()
         m_myProcess->kill();
         delete m_myProcess;
         m_myProcess = NULL;
+    }
+    if (m_messageBox)
+    {
+        delete m_messageBox;
+        m_messageBox = NULL;
     }
     qDebug() << "flodcloudwidget main over!";
 }
@@ -340,13 +347,26 @@ void FlodCloudWidget::on_class_startrp()
         QString strTmp;
         str = "start class request -------";
         http->GetData(strTmp);
+        //strTmp = "{\"success\":false,\"data\":[{\"code\":\"CLASSES_OPERATIONS-001\",\"message\":\"下一课\"}]}";
         str += strTmp;
         delete http;
         http = NULL;
         writeLogFile(QtDebugMsg, str);
-        //MyJson mjson;
-        //bool bRet = mjson.GetRespose(strTmp);
-        //m_pclassesForm->SetClassState(bRet, class_sel_t);
+//        MyJson mjson;
+//        QString strMsg;
+//        bool bRet = mjson.GetRespose(strTmp, strMsg);
+//        m_pclassesForm->SetClassState(bRet, class_sel_t);
+        MyJson mjson;
+        QString strMsg;
+        bool bRet = mjson.GetRespose(strTmp, strMsg);
+        if (!bRet)
+        {
+            if (strMsg == "")
+                strMsg = "消息为空!";
+            m_messageBox->SetText(strMsg);
+            m_messageBox->show();
+            m_pclassesForm->SetClassState(bRet, class_sel_t);
+        }
     }//if
 
 //    /*****************************************************/

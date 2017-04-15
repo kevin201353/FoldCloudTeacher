@@ -21,7 +21,7 @@ public slots:
 public:
     void GetClassTemplate(const QString jsonData, QList<class_template>& list_class);
     void GetRoomId(const QString jsonData, QList<class_Rooms>& list_rooms);
-    bool GetRespose(const QString jsonData);  //true or false
+    bool GetRespose(const QString jsonData, QString& strMsg);  //true or false
 };
 
 #endif // MYJSON_H

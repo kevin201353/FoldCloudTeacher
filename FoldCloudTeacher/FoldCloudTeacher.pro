@@ -11,7 +11,7 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 TARGET = FoldCloudTeacher
 TEMPLATE = app
 
-DESTDIR = ../Release
+DESTDIR = ../RuiClass2.1_Release
 
 
 SOURCES += main.cpp\
@@ -27,7 +27,8 @@ SOURCES += main.cpp\
     classesform.cpp \
     tcpserver.cpp \
     mytcpclient.cpp \
-    myjson.cpp
+    myjson.cpp \
+    messagebox.cpp
 
 HEADERS  += flodcloudwidget.h \
     cmytableview.h \
@@ -41,11 +42,13 @@ HEADERS  += flodcloudwidget.h \
     classesform.h \
     tcpserver.h \
     mytcpclient.h \
-    myjson.h
+    myjson.h \
+    messagebox.h
 
 FORMS    += flodcloudwidget.ui \
     stulist.ui \
-    classesform.ui
+    classesform.ui \
+    messagebox.ui
 
 RESOURCES += \
     sources.qrc

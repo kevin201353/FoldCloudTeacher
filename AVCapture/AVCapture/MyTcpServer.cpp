@@ -29,6 +29,8 @@ struct cyclic_buf  g_cbAudio;
 
 MyRingBuffer2  g_myRingRuffer2;
 
+BOOL  g_bstopThrd;
+
 MyTcpServer::MyTcpServer(void):
 m_iaddrSize(0)
 {
@@ -38,13 +40,16 @@ m_iaddrSize(0)
 	cyclic_buf_init(&g_cb, 32, sizeof(Video_Package));
 	dump_cyclic_buf(&g_cb, "after init");
 	cyclic_buf_init(&g_cbAudio, 32, sizeof(Audio_Package));
+	g_bstopThrd = FALSE;
 }
 
 
 MyTcpServer::~MyTcpServer(void)
 {
+	g_bstopThrd = TRUE;
 	if (NULL != g_hEvent)
 	{
+		SetEvent(g_hEvent);
 		CloseHandle(g_hEvent);
 		g_hEvent = NULL;
 	}
@@ -179,7 +184,8 @@ DWORD WINAPI MyTcpServer::WorkerThread(LPVOID lpParam)
         ret = WSAWaitForMultipleEvents(g_iTotalConn, g_CliEventArr, FALSE, WSA_INFINITE, FALSE);
 		if (ret == WSA_WAIT_FAILED || ret == WSA_WAIT_TIMEOUT)
 		{
-			//printf("wait socket event failed or timeout.\n");
+			printf("wait socket event failed or timeout.\n");
+			Sleep(100);
 			continue;
 		}
         index = ret - WSA_WAIT_EVENT_0;
@@ -289,6 +295,7 @@ int MyTcpServer::senddata(SOCKET socket, char* buf, int len)
 		l -= sendbytes;
 		d += sendbytes;
 		WSAResetEvent(m_sendOverlapped.hEvent);
+		Sleep(1);
 	}
 	return 0;
 }
@@ -301,6 +308,8 @@ int MyTcpServer::send_data2(SOCKET socket, char *buf, int len)
 	d = buf;
 	l = len;
 	while (l) {
+		if (g_bstopThrd)
+			break;
 		ret = send(socket, buf, len, 0);
 		if (ret <= 0) {
 			printf("send data failed.\n");
@@ -309,6 +318,7 @@ int MyTcpServer::send_data2(SOCKET socket, char *buf, int len)
 		l -= ret;
 		d += ret;
 		printf("send data bytes: %d\n", ret);
+		Sleep(1);
 	}
 	return 0;
 }
@@ -359,6 +369,10 @@ DWORD WINAPI MyTcpServer::AVCaptureThrd(LPVOID lpParam)
 	{
 		//printf("AVCaptureThrd  enter, wait event .\n");
 		DWORD dReturn = WaitForSingleObject(g_hEvent, INFINITE);
+		if (g_bstopThrd) 
+		{
+			break;
+		}
 		//printf("AVCaptureThrd  enter, wait event  00000 .\n");
 		if (WAIT_OBJECT_0 == dReturn)
 		{
@@ -385,7 +399,7 @@ DWORD WINAPI MyTcpServer::AVCaptureThrd(LPVOID lpParam)
 			}
 			if (count_p >= 65535)
 				count_p = 0;
-			//printf("capture video data start bflag : %d.\n", bflag);
+			printf("capture video data start bflag : %d.\n", bflag);
 			nSize = captureScreen.GetH264FrameData(g_szDataBuf, MAX_DATA_BUF, bflag);
 			if (bflag)
 				mediaHeader.type = 1;
@@ -416,7 +430,7 @@ DWORD WINAPI MyTcpServer::AVCaptureThrd(LPVOID lpParam)
 			fclose(stream);
 			*/
 		}
-		//Sleep(1);
+		Sleep(1);
 	}
 
 	//capture end
@@ -531,6 +545,10 @@ DWORD WINAPI MyTcpServer::AVProcess(LPVOID lpParam)
 		return 0;
 	while (1)
 	{
+		if (g_bstopThrd)
+		{
+			break;
+		}
 		Video_Package *vpk = NULL;
 		vpk = (Video_Package *)cyclic_buf_consume_get(&g_cb);
 		if (NULL != vpk)
@@ -555,7 +573,7 @@ DWORD WINAPI MyTcpServer::AVProcess(LPVOID lpParam)
 			cyclic_buf_consume(&g_cb);
 		}
 		pTcpServer->sendAudio(pTcpServer);
-		//Sleep(1);
+		Sleep(1);
 	}
 	return 0;
 }

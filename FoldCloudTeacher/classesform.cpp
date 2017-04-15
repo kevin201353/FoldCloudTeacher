@@ -38,17 +38,17 @@ ClassesForm::ClassesForm(QWidget *parent) :
     connect(ui->btn_right, SIGNAL(clicked(bool)), this, SLOT(on_right()));
     connect(ui->btn_class, SIGNAL(clicked(bool)), this, SLOT(on_class()));
     //
-    connect(ui->label_class1, SIGNAL(clicked()), this, SLOT(on_label_class1()));
-    connect(ui->label_class2, SIGNAL(clicked()), this, SLOT(on_label_class2()));
-    connect(ui->label_class3, SIGNAL(clicked()), this, SLOT(on_label_class3()));
+    m_labelClass[0] = static_cast<ClickableLabel*>(ui->label_class1);
+    m_labelClass[1] = static_cast<ClickableLabel*>(ui->label_class2);
+    m_labelClass[2] = static_cast<ClickableLabel*>(ui->label_class3);
+    connect(m_labelClass[0], SIGNAL(clicked()), this, SLOT(on_label_class1()));
+    connect(m_labelClass[1], SIGNAL(clicked()), this, SLOT(on_label_class2()));
+    connect(m_labelClass[2], SIGNAL(clicked()), this, SLOT(on_label_class3()));
     ui->btn_class->setText("上课");
     ui->btn_class->setEnabled(false);
     ui->btn_class->setVisible(false);
     setMouseTracking(true);
     m_moving = false;
-    m_labelClass[0] = ui->label_class1;
-    m_labelClass[1] = ui->label_class2;
-    m_labelClass[2] = ui->label_class3;
     m_direction = 0;
     m_firtindex = 0;
     QFont serifFont("Times", 14, QFont::Bold);

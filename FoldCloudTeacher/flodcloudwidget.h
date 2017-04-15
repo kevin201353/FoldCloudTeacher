@@ -10,6 +10,7 @@
 #include "global.h"
 #include <QList>
 #include <QProcess>
+#include "messagebox.h"
 
 namespace Ui {
 class FlodCloudWidget;
@@ -51,6 +52,7 @@ private:
     tcpserverThread *m_tcpserverThrd;
     TcpServer  *m_pTcpServer;
     QProcess*   m_myProcess;
+    MessageBox*  m_messageBox;
 };
 
 #endif // FLODCLOUDWIDGET_H

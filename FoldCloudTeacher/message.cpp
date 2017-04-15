@@ -14,6 +14,7 @@
 extern QList<StruInfo> g_stu2List;
 extern QList<StruInfo> g_handupList;
 extern QMap<QString, QObject *> g_mapObject;
+extern NetConfig g_config;
 
 void call_msg_back(MsgCallBackFun fun, struct ReportMsg msg)
 {
@@ -35,8 +36,8 @@ void msg_respose(struct ReportMsg msg)
                     char sztmp[100] = {0};
                     sprintf(sztmp, "col = %d, row = %d .", col, row);
                     StruInfo info = g_stu2List.at(row);
-                    QString url = HTTP_URL_HEAD;
-                    url += SERVICE_ADDRESS;
+                    QString url = g_config.protocol;
+                    url += g_config.addr;
                     url += "/service/classes/specify_stu_show";
                     QString data;
                     data = "apId=";

@@ -3,6 +3,7 @@
 #include <QJsonObject>
 #include <QJsonValue>
 #include <QJsonArray>
+#include <QDebug>
 
 MyJson::MyJson(QObject *parent) : QObject(parent)
 {
@@ -129,12 +130,12 @@ void MyJson::GetRoomId(const QString jsonData, QList<class_Rooms>& list_rooms)
 }
 
 
-bool MyJson::GetRespose(const QString jsonData)
+bool MyJson::GetRespose(const QString jsonData, QString& strMsg)
 {
     if (jsonData.length() == 0)
         return false;
     QJsonParseError json_error;
-    QByteArray byteData = jsonData.toLatin1();
+    QByteArray byteData = jsonData.toUtf8();
     QJsonDocument parse_doucment = QJsonDocument::fromJson(byteData, &json_error);
     if (!parse_doucment.isNull() && json_error.error == QJsonParseError::NoError)
     {
@@ -144,10 +145,31 @@ bool MyJson::GetRespose(const QString jsonData)
             if (obj.contains("success"))
             {
                 QJsonValue value = obj.take("success");
-                if (value.isBool())
+                if (obj.contains("data"))
                 {
-                    return value.toBool();
+                    value = obj.take("data");
+                    if (value.isArray())
+                    {
+                        QJsonArray jsonArray = value.toArray();
+                        int size = jsonArray.size();
+                        for (int i=0; i < size; i++)
+                        {
+                            value = jsonArray.at(i);
+                            if (value.isObject())
+                            {
+                                 obj = value.toObject();
+                                 if (obj.contains("message"))
+                                 {
+                                     QByteArray bb =  obj.take("message").toString().toUtf8();
+                                     strMsg = QString::fromUtf8(bb);
+                                     qDebug() << "message :" << strMsg;
+                                 }
+                            }
+
+                        }
+                    }
                 }
+                return value.toBool();
             }
         }
     }
