@@ -1,4 +1,25 @@
 #include "mytcpclient.h"
+#include <QHostAddress>
+#include <QNetworkInterface>
+#include "global.h"
+
+QHostAddress getLocalHostIP()
+{
+  QList<QHostAddress> AddressList = QNetworkInterface::allAddresses();
+  QHostAddress result;
+  foreach(QHostAddress address, AddressList){
+      if(address.protocol() == QAbstractSocket::IPv4Protocol &&
+         address != QHostAddress::Null &&
+         address != QHostAddress::LocalHost){
+          if (address.toString().contains("127.0.")){
+            continue;
+          }
+          result = address;
+          break;
+      }
+  }
+  return result;
+}
 
 mytcpclient::mytcpclient(QObject *parent) :
     QObject(parent),
@@ -27,6 +48,9 @@ void mytcpclient::newConnect()
     {
         tcpClient->abort(); //取消已有的连接
         QString str = hostAddress.toString();
+        QString msg = "mytcpclient connect client ip : ";
+        msg += str;
+        writeLogFile(QtDebugMsg, msg);
         tcpClient->connectToHost(str, tcpPort); //连接到指定ip地址和端口的主机
         if (!tcpClient->waitForConnected(5000))
         {

@@ -83,8 +83,10 @@ captureScreen::captureScreen()
 	m_pFrame = NULL;
 	m_pOutFrame = NULL;
 
-	m_param.width = 1920;
-	m_param.height = 1080;
+	//m_param.width = 1920;
+	//m_param.height = 1080;
+	m_param.width = GetSystemMetrics(SM_CXSCREEN);
+	m_param.height = GetSystemMetrics(SM_CYSCREEN);
 	m_param.impl =  MFX_IMPL_VIA_D3D9;
 	m_param.enc_codec = MFX_CODEC_AVC;
 	m_param.fourcc = MFX_FOURCC_NV12;
@@ -207,7 +209,7 @@ mfxI32 captureScreen::Init()
 	m_enpar.mfx.NumThread = 2;
 	if (MFX_CODEC_AVC == m_enpar.mfx.CodecId)
 	{
-		m_enpar.mfx.RateControlMethod = MFX_RATECONTROL_CBR;
+		m_enpar.mfx.RateControlMethod = MFX_RATECONTROL_VBR;
 		m_enpar.mfx.TargetUsage = MFX_TARGETUSAGE_BALANCED;
 		m_enpar.mfx.TargetKbps = 5000;
 		m_enpar.mfx.GopRefDist = 1;

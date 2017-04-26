@@ -82,40 +82,45 @@ void msg_respose(struct ReportMsg msg)
                     if (pView->GetMyItemModel(1) != NULL)
                     {
                         int ncount = pView->GetMyItemModel(1)->rowCount();
-                        if (ncount > 0)
-                            pView->GetMyItemModel(1)->removeRows(0, ncount);
-                        int size = 0;
-                        if (msg.val1 == 1)
-                            size = g_stu2List.size();
-                        if (msg.val1 == 0)
-                            size = g_handupList.size();
-                        for(int i=0; i<size ; i++)
+                        if (ncount >= 0)
                         {
-                            StruInfo info;
-                            if (msg.val1 == 0)
-                                info = g_handupList.at(i);
-                            if (msg.val1 == 1)
-                                info = g_stu2List.at(i);
-                            QStandardItem * item = new QStandardItem;
-                            QString str = info.name;
-                            str += " - ";
-                            str += info.noSeat;
-                            item->setText(str);
-                            if (pView->GetMyItemModel(msg.val1) != NULL)
-                            {
-                                pView->setRowHeight(i, 30);
-                                if ( i*30 + 30 > pView->height())
-                                {
-                                    //出现滚动条
-                                    pView->setColumnWidth(0,  150);
-                                    pView->setColumnWidth(1, 60);
-                                }
-                                QString s00 = "7777777777777777777777 add list -------    ";
-                                s00 += str;
-                                qDebug() << s00;
-                                pView->GetMyItemModel(msg.val1)->setItem(i, 0, item);
-                            }
-                        }//for
+                            
+                        }
+//                        int ncount = pView->GetMyItemModel(1)->rowCount();
+//                        if (ncount > 0)
+//                            pView->GetMyItemModel(1)->removeRows(0, ncount);
+//                        int size = 0;
+//                        if (msg.val1 == 1)
+//                            size = g_stu2List.size();
+//                        if (msg.val1 == 0)
+//                            size = g_handupList.size();
+//                        for(int i=0; i<size ; i++)
+//                        {
+//                            StruInfo info;
+//                            if (msg.val1 == 0)
+//                                info = g_handupList.at(i);
+//                            if (msg.val1 == 1)
+//                                info = g_stu2List.at(i);
+//                            QStandardItem * item = new QStandardItem;
+//                            QString str = info.name;
+//                            str += " - ";
+//                            str += info.noSeat;
+//                            item->setText(str);
+//                            if (pView->GetMyItemModel(msg.val1) != NULL)
+//                            {
+//                                pView->setRowHeight(i, 30);
+//                                if ( i*30 + 30 > pView->height())
+//                                {
+//                                    //出现滚动条
+//                                    pView->setColumnWidth(0,  150);
+//                                    pView->setColumnWidth(1, 60);
+//                                }
+//                                QString s00 = "7777777777777777777777 add list -------    ";
+//                                s00 += str;
+//                                qDebug() << s00;
+//                                pView->GetMyItemModel(msg.val1)->setItem(i, 0, item);
+//                            }
+//                        }//for
                     }
                 }//if pview
             }//if list

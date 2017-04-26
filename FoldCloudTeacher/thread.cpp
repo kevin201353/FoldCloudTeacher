@@ -30,7 +30,7 @@ void Thread::run()
     {
         QMutexLocker Locker(&g_mutex);
         SendMessage();
-        sleep(1);
+        sleep(5);
     }
     m_stopped = false;
 }

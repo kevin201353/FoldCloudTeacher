@@ -30,7 +30,7 @@ struct cyclic_buf  g_cbAudio;
 MyRingBuffer2  g_myRingRuffer2;
 
 BOOL  g_bstopThrd;
-
+BOOL  g_bAVCatpure = TRUE;  
 MyTcpServer::MyTcpServer(void):
 m_iaddrSize(0)
 {
@@ -39,8 +39,15 @@ m_iaddrSize(0)
 	g_frank_xor = MyTcpServer::get_random_by_pid();
 	cyclic_buf_init(&g_cb, 32, sizeof(Video_Package));
 	dump_cyclic_buf(&g_cb, "after init");
-	cyclic_buf_init(&g_cbAudio, 32, sizeof(Audio_Package));
+	//cyclic_buf_init(&g_cbAudio, 32, sizeof(Audio_Package));
 	g_bstopThrd = FALSE;
+	g_bAVCatpure = TRUE;
+	for (int i = 0; i < MAXIMUM_WAIT_OBJECTS; i++)
+	{
+		g_CliSocketArr[i] = INVALID_SOCKET;
+		g_CliEventArr[i] = NULL;
+		g_pPerIODataArr[i] = NULL;
+	}
 }
 
 
@@ -58,7 +65,8 @@ MyTcpServer::~MyTcpServer(void)
 		Cleanup(i);
 	}
 	cyclic_buf_free(&g_cb);
-	cyclic_buf_free(&g_cbAudio);
+	g_bAVCatpure = FALSE;
+	//cyclic_buf_free(&g_cbAudio);
 }
 
 BOOL MyTcpServer::WinSockInit()
@@ -75,9 +83,20 @@ BOOL MyTcpServer::WinSockInit()
 
 void MyTcpServer::Cleanup(int index)
 {
-	closesocket(g_CliSocketArr[index]);
-    WSACloseEvent(g_CliEventArr[index]);
-    HeapFree(GetProcessHeap(), 0, g_pPerIODataArr[index]);
+	if (INVALID_SOCKET != g_CliSocketArr[index])
+	{
+		closesocket(g_CliSocketArr[index]);
+		g_CliSocketArr[index] = INVALID_SOCKET;
+	}
+	if (NULL != g_CliEventArr[index])
+	{
+		WSACloseEvent(g_CliEventArr[index]);
+		g_CliEventArr[index] = NULL;
+	}
+	if (NULL != g_pPerIODataArr[index])
+	{
+		HeapFree(GetProcessHeap(), 0, g_pPerIODataArr[index]);
+	}
     if (index < g_iTotalConn - 1)
     {    
         g_CliSocketArr[index] = g_CliSocketArr[g_iTotalConn - 1];
@@ -111,7 +130,7 @@ BOOL MyTcpServer::StartTcpServer()
     CreateThread(NULL, 0, WorkerThread, this, 0, &dwThreadId);
 	//开始抓捕桌面线程
 	stat_catputVideo();
-	stat_catputAudio();
+	//stat_catputAudio();
 	start_av_process();
 	return TRUE;
 }
@@ -205,8 +224,11 @@ DWORD WINAPI MyTcpServer::WorkerThread(LPVOID lpParam)
 			int nTmp = 0;
 		}
         //若调用失败  
-        if (cbTransferred == 0)
-            pserver->Cleanup(index);//关闭客户端连接
+		if (cbTransferred == 0)
+		{
+			printf("recv data WSAGetOverlappedResult cbTransferred == 0 return = %d.\n", WSAGetLastError());
+			pserver->Cleanup(index);//关闭客户端连接
+		}
         else  
         {
             //将数据保存到szMessage里边           
@@ -253,7 +275,11 @@ BOOL  MyTcpServer::send_data(char* buf, int len)
 		if (NULL != g_CliSocketArr[i])
 		{
 			//senddata(g_CliSocketArr[i], buf, len);
-			send_data2(g_CliSocketArr[i], buf, len);
+			int nRet = send_data2(g_CliSocketArr[i], buf, len);
+			if (nRet == -1)
+			{
+				Cleanup(i);
+			}
 		}
 	}
 	return TRUE;
@@ -307,12 +333,19 @@ int MyTcpServer::send_data2(SOCKET socket, char *buf, int len)
 	char *d = NULL;
 	d = buf;
 	l = len;
+	int nRet = 0;
 	while (l) {
 		if (g_bstopThrd)
 			break;
+		if (g_bAVCatpure == FALSE)
+		{
+			nRet = -1;
+			break;
+		}
 		ret = send(socket, buf, len, 0);
 		if (ret <= 0) {
-			printf("send data failed.\n");
+			printf("send data failed, error = %d.\n", WSAGetLastError());
+			nRet = -1;
 			break;
 		}
 		l -= ret;
@@ -320,7 +353,7 @@ int MyTcpServer::send_data2(SOCKET socket, char *buf, int len)
 		printf("send data bytes: %d\n", ret);
 		Sleep(1);
 	}
-	return 0;
+	return nRet;
 }
 
 
@@ -369,13 +402,20 @@ DWORD WINAPI MyTcpServer::AVCaptureThrd(LPVOID lpParam)
 	{
 		//printf("AVCaptureThrd  enter, wait event .\n");
 		DWORD dReturn = WaitForSingleObject(g_hEvent, INFINITE);
-		if (g_bstopThrd) 
-		{
-			break;
-		}
 		//printf("AVCaptureThrd  enter, wait event  00000 .\n");
 		if (WAIT_OBJECT_0 == dReturn)
 		{
+			if (g_bstopThrd)
+			{
+				break;
+			}
+			if (g_bAVCatpure == FALSE)
+			{
+				bfirst = true;
+				count_p = 0;
+				Sleep(1);
+				continue;
+			}
 			//printf("AVCaptureThrd  enter, wait event  1111 .\n");
 			memset(g_szDataBuf, 0, sizeof(char) * MAX_DATA_BUF);
 			dwStart = GetTickCount();
@@ -398,14 +438,17 @@ DWORD WINAPI MyTcpServer::AVCaptureThrd(LPVOID lpParam)
 				nloop++;
 			}
 			if (count_p >= 65535)
+			{
+				bfirst = true;
 				count_p = 0;
-			printf("capture video data start bflag : %d.\n", bflag);
+			}
+			//printf("capture video data start bflag : %d.\n", bflag);
 			nSize = captureScreen.GetH264FrameData(g_szDataBuf, MAX_DATA_BUF, bflag);
 			if (bflag)
 				mediaHeader.type = 1;
 			else
 				mediaHeader.type = 2;
-			//printf("capture video data len : %d\n", nSize);
+			printf("capture video data len : %d\n", nSize);
 			mediaHeader.width = g_screenWith;
 			mediaHeader.height = g_screenHeight;
 			mediaHeader.cursor_x = 20;
@@ -551,7 +594,7 @@ DWORD WINAPI MyTcpServer::AVProcess(LPVOID lpParam)
 		}
 		Video_Package *vpk = NULL;
 		vpk = (Video_Package *)cyclic_buf_consume_get(&g_cb);
-		if (NULL != vpk)
+		if (NULL != vpk && g_bAVCatpure == TRUE)
 		{
 			media_header  mediaHeader;
 			mediaHeader = vpk->header;
@@ -569,10 +612,10 @@ DWORD WINAPI MyTcpServer::AVProcess(LPVOID lpParam)
 				mediaHeader.checksum += pata[i];
 			}
 			pTcpServer->send_data((char*)&mediaHeader, sizeof(media_header));
-			pTcpServer->send_data(g_szDataBuf_V, mediaHeader.size);
+		    pTcpServer->send_data(g_szDataBuf_V, mediaHeader.size);
 			cyclic_buf_consume(&g_cb);
 		}
-		pTcpServer->sendAudio(pTcpServer);
+		//pTcpServer->sendAudio(pTcpServer);
 		Sleep(1);
 	}
 	return 0;
@@ -625,4 +668,16 @@ void MyTcpServer::sendAudio(MyTcpServer *pServer)
 			cyclic_buf_consume(&g_cbAudio);
 		}
 	}
+}
+
+void MyTcpServer::disConnectAll()
+{
+	for (int i = 0; i<g_iTotalConn; i++)
+	{
+		if (NULL != g_CliSocketArr[i])
+		{
+			Cleanup(i);
+		}
+	}
+	cyclic_buf_consume(&g_cb);
 }

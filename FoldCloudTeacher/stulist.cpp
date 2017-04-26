@@ -80,8 +80,9 @@ void stulist::settype(short ntype)
     m_mytableview->clearSpans();
     m_mytableview->updateGeometry();
     m_mytableview->SetType(ntype);
-    m_mytableview->setColumnWidth(0,  522);
+    m_mytableview->setColumnWidth(0, 150);
     m_mytableview->setColumnWidth(1, 60);
+    m_mytableview->setColumnWidth(2, 60);
     Thread * pthread = ((FlodCloudWidget *)m_pWidget)->GetThread();
     DataThread *pdataThread = ((FlodCloudWidget *)m_pWidget)->GetDataThread();
     pthread->settype("stu", ntype);

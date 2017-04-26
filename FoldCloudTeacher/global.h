@@ -15,6 +15,7 @@
 #define  USER_MSG_NOTICEWINDOW       103
 #define  USER_MSG_CLASSINFO          104
 #define  USER_MSG_UPDATEHANDUP       105
+#define  USER_MSG_CLOSEDEMO          106
 
 struct XSize {
     int x;
@@ -77,6 +78,15 @@ struct class_sel {
   QString  name;
   int   ndex;
 };
+
+#define MSG_DATA_LEN  1024
+#define MSG_MAX_BUFF  4096
+struct MSG_COMM {
+    short type;
+    int   len;
+    char  data[MSG_DATA_LEN];
+};
+
 #define FRAME_TYPE_MJPEG        0
 #define FRAME_TYPE_H264_I       1
 #define FRAME_TYPE_H264_P       2

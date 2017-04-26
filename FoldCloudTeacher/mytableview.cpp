@@ -9,6 +9,8 @@
 #include <QScrollBar>
 #include <QRect>
 #include <QString>
+#include <QPushButton>
+#include <QApplication>
 
 char szTmp[100] = {0};
 struct ReportMsg g_Msg = {NULL, 0, 0, 0, "", ""};
@@ -18,6 +20,8 @@ MyStuDelegate::MyStuDelegate(QObject *parent):
     favouritePixmap[0] = QPixmap(":/images/handed_nor.png");
     favouritePixmap[1] = QPixmap(":/images/list_demo.png");
     favouritePixmap[2] = QPixmap(":/images/list_demo_press.png");
+    demoPixmap[0] = QPixmap(":/images/close_demo.png");
+    demoPixmap[1] = QPixmap(":/images/close_demo_press.png");
     m_pdemoSize = NULL;
     m_pdemoSize = new struct XSize;
     m_ntype = 0;
@@ -47,6 +51,15 @@ void MyStuDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
         int y = rect.y() + rect.height()/2 - favouritePixmap[m_ntype].height()/2;
         SetDemoPixSize(x, y, favouritePixmap[m_ntype].width(), favouritePixmap[m_ntype].height());
         QPixmap pixmap = ( m_bpress && (index.row() == m_row) && m_ntype == 1 )? favouritePixmap[2]:favouritePixmap[m_ntype];
+        painter->drawPixmap(x, y, pixmap);
+    }
+    if (index.column() == 2)
+    {
+        QRect rect = option.rect;
+        int x = rect.x() + rect.width()/2 - demoPixmap[0].width()/2;
+        int y = rect.y() + rect.height()/2 - demoPixmap[0].height()/2;
+        SetDemoPixSize(x, y, demoPixmap[0].width(), demoPixmap[0].height());
+        QPixmap pixmap = ( m_bpress && (index.row() == m_row) && m_ntype == 1 )? demoPixmap[1]:demoPixmap[0];
         painter->drawPixmap(x, y, pixmap);
     }
 }
@@ -131,18 +144,19 @@ CMytableview::CMytableview(QWidget *parent):
     model = new MyStandardItemModel;
     modelhandup = new MyStandardItemModel;
     //model->setRowCount(6);
-    model->setColumnCount(2);
+    model->setColumnCount(3);
     //modelhandup->setRowCount(6);
-    modelhandup->setColumnCount(2);
+    modelhandup->setColumnCount(3);
     ncount = 0;
     this->setItemDelegate(delegate);
-    this->resizeColumnsToContents();
-    this->resizeRowsToContents();
-    this->setEditTriggers(QAbstractItemView::NoEditTriggers);
-    this->setSelectionBehavior(QAbstractItemView::SelectRows);
+    //this->resizeColumnsToContents();
+    //this->resizeRowsToContents();
+    //this->setEditTriggers(QAbstractItemView::NoEditTriggers);
+    //this->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->setMouseTracking(true);//important
-    this->setColumnWidth(0,  522);
+    this->setColumnWidth(0, 150);
     this->setColumnWidth(1, 60);
+    this->setColumnWidth(2, 60);
 }
 
 CMytableview::~CMytableview()
@@ -174,7 +188,7 @@ void CMytableview::mouseMoveEvent(QMouseEvent *event)
     {
         col = modelIndex.column();
         row = modelIndex.row();
-        if (col == 1)
+        if (col == 1 || col == 2)
         {
             if (delegate != NULL)
             {
@@ -221,6 +235,22 @@ void CMytableview::mouseReleaseEvent(QMouseEvent *event)
                     call_msg_back(msg_respose, g_Msg);
                 }
             }//if col
+            if (col == 2)
+            {
+                struct XSize size;
+                delegate->GetDemoPixSize(&size);
+                //sprintf(szTmp, "size.x = %d, size.y = %d, size.width = %d, size.height = %d .\n", size.x, size.y, size.width, size.height);
+                //writeLogFile(QtDebugMsg, szTmp);
+                if ( (p.x() >= size.x - 2 && p.x() <= size.x - 2 + size.width) &&
+                     (p.y() >= row * 30 + 4 && p.y() <= row * 30 + size.height - 4 ))
+                {
+                    g_Msg.obj = qobject_cast<QObject *>(this);
+                    g_Msg.action = USER_MSG_CLOSEDEMO;
+                    g_Msg.val1 = col;
+                    g_Msg.val2 = row;
+                    call_msg_back(msg_respose, g_Msg);
+                }
+            }//if col
         }
     }//if ( delegate->m_ntype == 1 )
     QTableView::mouseReleaseEvent(event);
@@ -244,4 +274,8 @@ void CMytableview::SetType(int type)
 void CMytableview::setCount(int count)
 {
     ncount = count;
+}
+
+void CMytableview::_setCellWidget()
+{
 }

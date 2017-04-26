@@ -38,6 +38,7 @@ public:
 	static int get_random_by_pid();
 	void start_av_process();
 	void sendAudio(MyTcpServer *pServer);
+	void disConnectAll();
 private:
 	SOCKET	m_sListen, m_sClient;
     SOCKADDR_IN	m_local, m_client;

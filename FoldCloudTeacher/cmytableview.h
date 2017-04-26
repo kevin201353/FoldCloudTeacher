@@ -26,6 +26,7 @@ public:
     void setpress(bool bpres, int row);
 private:
     QPixmap favouritePixmap[3];
+    QPixmap demoPixmap[2];
     struct XSize  *m_pdemoSize;
     int  m_ntype;
     bool  m_bpress;
@@ -62,6 +63,7 @@ public:
     int getCount() const {
         return ncount;
     };
+    void _setCellWidget();
 protected:
     void mousePressEvent(QMouseEvent *event) Q_DECL_OVERRIDE;
     void mouseMoveEvent(QMouseEvent *event) Q_DECL_OVERRIDE;

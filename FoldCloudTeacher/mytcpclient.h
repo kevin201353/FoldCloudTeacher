@@ -17,10 +17,10 @@ public:
      int readdata(QTcpSocket* sock_fd , char *buffer, int len);
      void closeTcpClient();
      int send_data(char *buf,  int len);
+     void newConnect();
 signals:
 
 public slots:
-    void newConnect();
     void readMessage();
     void displayError(QAbstractSocket::SocketError socketError);
 private:

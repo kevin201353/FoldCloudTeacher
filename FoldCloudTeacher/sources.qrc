@@ -9,5 +9,7 @@
         <file>images/list_demo_press.png</file>
         <file>images/student_nor.png</file>
         <file>images/student_press.png</file>
+        <file>images/close_demo.png</file>
+        <file>images/close_demo_press.png</file>
     </qresource>
 </RCC>

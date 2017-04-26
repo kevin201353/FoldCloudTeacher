@@ -16,12 +16,15 @@
 #define  WIDGET_MAIN_HEIGHT   100
 #define  WIDGET_MAIN_WIDTH    300
 
+#define   SIMPLE_TCP_PORT  27015
+
 QMap<QString, QObject *> g_mapObject;
 NetConfig g_config;
 extern QMap<QString, QTcpSocket*> g_userlist;
 extern QMutex  g_tcpMutex;
 extern QList<class_template> m_list_classt;
 extern QList<class_Rooms> m_list_rooms;
+extern QHostAddress getLocalHostIP();
 
 FlodCloudWidget::FlodCloudWidget(QWidget *parent) :
     QWidget(parent),
@@ -226,14 +229,16 @@ void FlodCloudWidget::on_demostrate_clicked()
                                           "QPushButton:hover{border-image: url(:/images/demo_stop_nor.png);}"
                                         "QPushButton:pressed{border-image: url(:/images/demo_stop_press.png);}");*/
             ui->btn_demostrate->setText("结束演示");
+            av_singal_start();
         }
         if (bDemoRunning && !m_bstart)
         {
             /*ui->btn_demostrate->setStyleSheet("QPushButton{border-image: url(:/images/demo_nor.png);}"
                                          "QPushButton:hover{border-image: url(:/images/demo_press.png);}"
                                         "QPushButton:pressed{border-image: url(:/images/demo_nor.png);}");*/
-            ui->btn_demostrate->setText("开始演示");
 
+            ui->btn_demostrate->setText("开始演示");
+            av_singal_stop();
         }
     }
 }
@@ -481,3 +486,30 @@ void FlodCloudWidget::GetClassTemplate()
     }
 }
 
+void FlodCloudWidget::av_singal_start()
+{
+    mytcpclient client;
+    client.setHostAddress(QHostAddress::LocalHost, SIMPLE_TCP_PORT);
+    MSG_COMM  msgComm;
+    msgComm.type = 1;
+    char szTmp[MSG_MAX_BUFF] = {0};
+    msgComm.len = strlen("start");
+    sprintf(msgComm.data, "%s", "start");
+    memcpy(szTmp, &msgComm, sizeof(MSG_COMM));
+    client.newConnect();
+    client.send_data(szTmp, sizeof(szTmp));
+}
+
+void FlodCloudWidget::av_singal_stop()
+{
+    mytcpclient client;
+    client.setHostAddress(QHostAddress::LocalHost, SIMPLE_TCP_PORT);
+    MSG_COMM  msgComm;
+    msgComm.type = 1;
+    char szTmp[MSG_MAX_BUFF] = {0};
+    sprintf(msgComm.data, "%s", "stop");
+    msgComm.len = strlen("stop");
+    memcpy(szTmp, &msgComm, sizeof(MSG_COMM));
+    client.newConnect();
+    client.send_data(szTmp, sizeof(szTmp));
+}

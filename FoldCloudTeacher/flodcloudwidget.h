@@ -41,6 +41,8 @@ private slots:
     void on_stuDemostrate_clicked();
     void on_tcp_Msg();
     void on_class_startrp();
+    void av_singal_start();
+    void av_singal_stop();
 private:
     Ui::FlodCloudWidget *ui;
     stulist  *m_pstulist;
