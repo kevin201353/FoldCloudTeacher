@@ -17,6 +17,30 @@ extern QList<StruInfo> g_handupList;
 extern QMap<QString, QObject *> g_mapObject;
 extern NetConfig g_config;
 
+
+bool _isExist_seat(CMytableview *pView, QString seat)
+{
+     int ncount = pView->GetMyItemModel(1)->rowCount();
+     for (int i=0; i<ncount; i++)
+     {
+         QStandardItem * item = pView->GetMyItemModel(1)->item(i, 0);
+         if (item != NULL)
+         {
+             QString tmp = item->text();
+             if (tmp.length() > 0 && !tmp.isEmpty())
+             {
+                 int index = tmp.indexOf("-");
+                 QString seat_tmp = tmp.mid(index + 1);
+                 seat_tmp = seat_tmp.trimmed();
+                 qDebug() << "add student seat" << seat_tmp;
+                 if (seat_tmp == seat)
+                    return true;
+             }
+         }
+     }
+     return false;
+}
+
 void call_msg_back(MsgCallBackFun fun, struct ReportMsg msg)
 {
     fun(msg);
@@ -54,13 +78,13 @@ void msg_respose(struct ReportMsg msg)
                         str += data;
                         writeLogFile(QtDebugMsg, str);
                         qDebug()<< str;
-                        if (!http->Post(url, data))
-                        {
-                            writeLogFile(QtDebugMsg, "教室指定学生演示失败.");
-                        }
+//                        if (!http->Post(url, data))
+//                        {
+//                            writeLogFile(QtDebugMsg, "教室指定学生演示失败.");
+//                        }
                         QString strTmp;
                         str = "specify_stu_show -------";
-                        http->GetData(strTmp);
+//                        http->GetData(strTmp);
                         str += strTmp;
                         writeLogFile(QtDebugMsg, str);
                         delete http;
@@ -81,41 +105,33 @@ void msg_respose(struct ReportMsg msg)
                 {
                     if (pView->GetMyItemModel(1) != NULL)
                     {
-                        int ncount = pView->GetMyItemModel(1)->rowCount();
-                        if (ncount > 0)
-                            pView->GetMyItemModel(1)->removeRows(0, ncount);
-                        int size = 0;
-                        if (msg.val1 == 1)
-                            size = g_stu2List.size();
-                        if (msg.val1 == 0)
-                            size = g_handupList.size();
-                        for(int i=0; i<size ; i++)
+                        for (int i=0; i<g_stu2List.size(); i++)
                         {
                             StruInfo info;
-                            if (msg.val1 == 0)
-                                info = g_handupList.at(i);
-                            if (msg.val1 == 1)
-                                info = g_stu2List.at(i);
-                            QStandardItem * item = new QStandardItem;
-                            QString str = info.name;
-                            str += " - ";
-                            str += info.noSeat;
-                            item->setText(str);
-                            if (pView->GetMyItemModel(msg.val1) != NULL)
+                            info = g_stu2List.at(i);
+                            if (!_isExist_seat(pView, info.noSeat))
                             {
-                                pView->setRowHeight(i, 30);
-                                if ( i*30 + 30 > pView->height())
+                                QStandardItem * item = new QStandardItem;
+                                QString str = info.name;
+                                str += " - ";
+                                str += info.noSeat;
+                                item->setText(str);
+                                if (pView->GetMyItemModel(msg.val1) != NULL)
                                 {
-                                    //出现滚动条
-                                    pView->setColumnWidth(0,  150);
-                                    pView->setColumnWidth(1, 60);
+                                   pView->setRowHeight(i, 30);
+                                   if ( i*30 + 30 > pView->height())
+                                   {
+                                       //出现滚动条
+                                       pView->setColumnWidth(0,  200);
+                                       pView->setColumnWidth(1, 60);
+                                   }
+                                   QString s00 = "7777777777777777777777 add list -------    ";
+                                   s00 += str;
+                                   qDebug() << s00;
+                                   pView->GetMyItemModel(msg.val1)->setItem(i, 0, item);
                                 }
-                                QString s00 = "7777777777777777777777 add list -------    ";
-                                s00 += str;
-                                qDebug() << s00;
-                                pView->GetMyItemModel(msg.val1)->setItem(i, 0, item);
                             }
-                        }//for
+                        }
                     }
                 }//if pview
             }//if list
@@ -201,13 +217,13 @@ void msg_respose(struct ReportMsg msg)
                         str += data;
                         writeLogFile(QtDebugMsg, str);
                         qDebug()<< str;
-                        if (!http->Post(url, data))
-                        {
-                            writeLogFile(QtDebugMsg, "学生结束演示失败.");
-                        }
+//                        if (!http->Post(url, data))
+//                        {
+//                            writeLogFile(QtDebugMsg, "学生结束演示失败.");
+//                        }
                         QString strTmp;
                         str = "specify_stu_show -------";
-                        http->GetData(strTmp);
+//                        http->GetData(strTmp);
                         str += strTmp;
                         writeLogFile(QtDebugMsg, str);
                         delete http;

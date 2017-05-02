@@ -15,6 +15,7 @@ QString g_xmldata;
 QMutex g_mutex;
 extern QMap<QString, QObject *> g_mapObject;
 extern MyQList   g_NoticeList;
+int  g_first = 2;
 Thread::Thread()
 {
     m_stopped = false;
@@ -26,10 +27,17 @@ Thread::~Thread()
 
 void Thread::run()
 {
+    int i=0;
     while (!m_stopped)
     {
         QMutexLocker Locker(&g_mutex);
         SendMessage();
+        if (i<g_first )
+        {
+            i++;
+            sleep(1);
+            continue;
+        }
         sleep(5);
     }
     m_stopped = false;

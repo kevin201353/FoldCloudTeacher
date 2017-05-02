@@ -366,10 +366,11 @@ void FlodCloudWidget::on_class_startrp()
         bool bRet = mjson.GetRespose(strTmp, strMsg);
         if (!bRet)
         {
-            if (strMsg == "")
-                strMsg = "消息为空!";
-            m_messageBox->SetText(strMsg);
-            m_messageBox->show();
+            if (strMsg != "" && strMsg.length() > 0)
+            {
+                m_messageBox->SetText(strMsg);
+                m_messageBox->show();
+            }
             m_pclassesForm->SetClassState(bRet, class_sel_t);
         }
     }//if

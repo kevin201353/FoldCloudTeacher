@@ -14,6 +14,7 @@
 
 char szTmp[100] = {0};
 struct ReportMsg g_Msg = {NULL, 0, 0, 0, "", ""};
+bool bpress = false;
 MyStuDelegate::MyStuDelegate(QObject *parent):
     QItemDelegate(parent)
 {
@@ -36,12 +37,15 @@ MyStuDelegate::~MyStuDelegate()
     }
 }
 
+QRect rect0;
 void MyStuDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     if(index.column() == 0){
        QItemDelegate::paint(painter,option,index);
        return;
     }
+    if (option.state & QStyle::State_Selected)
+              painter->fillRect(option.rect, option.palette.light());
     if (index.column() == 1)
     {
         //sprintf(szTmp, "m_ntype = %d.\n", m_ntype);
@@ -50,18 +54,18 @@ void MyStuDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option,
         int x = rect.x() + rect.width()/2 - favouritePixmap[m_ntype].width()/2;
         int y = rect.y() + rect.height()/2 - favouritePixmap[m_ntype].height()/2;
         SetDemoPixSize(x, y, favouritePixmap[m_ntype].width(), favouritePixmap[m_ntype].height());
-        QPixmap pixmap = ( m_bpress && (index.row() == m_row) && m_ntype == 1 )? favouritePixmap[2]:favouritePixmap[m_ntype];
+        QPixmap pixmap = ( m_bpress && (index.row() == m_row) && m_ntype == 1 )? demoPixmap[1]:favouritePixmap[m_ntype];
         painter->drawPixmap(x, y, pixmap);
     }
-    if (index.column() == 2)
-    {
-        QRect rect = option.rect;
-        int x = rect.x() + rect.width()/2 - demoPixmap[0].width()/2;
-        int y = rect.y() + rect.height()/2 - demoPixmap[0].height()/2;
-        SetDemoPixSize(x, y, demoPixmap[0].width(), demoPixmap[0].height());
-        QPixmap pixmap = ( m_bpress && (index.row() == m_row) && m_ntype == 1 )? demoPixmap[1]:demoPixmap[0];
-        painter->drawPixmap(x, y, pixmap);
-    }
+//    if (index.column() == 2)
+//    {
+//        QRect rect = option.rect;
+//        int x = rect.x() + rect.width()/2 - demoPixmap[0].width()/2;
+//        int y = rect.y() + rect.height()/2 - demoPixmap[0].height()/2;
+//        SetDemoPixSize(x, y, demoPixmap[0].width(), demoPixmap[0].height());
+//        QPixmap pixmap = ( m_bpress && (index.row() == m_row) && m_ntype == 1 )? demoPixmap[1]:demoPixmap[0];
+//        painter->drawPixmap(x, y, pixmap);
+//    }
 }
 
 void MyStuDelegate::SetType(int type)
@@ -144,9 +148,9 @@ CMytableview::CMytableview(QWidget *parent):
     model = new MyStandardItemModel;
     modelhandup = new MyStandardItemModel;
     //model->setRowCount(6);
-    model->setColumnCount(3);
+    model->setColumnCount(2);
     //modelhandup->setRowCount(6);
-    modelhandup->setColumnCount(3);
+    modelhandup->setColumnCount(2);
     ncount = 0;
     this->setItemDelegate(delegate);
     //this->resizeColumnsToContents();
@@ -154,7 +158,7 @@ CMytableview::CMytableview(QWidget *parent):
     //this->setEditTriggers(QAbstractItemView::NoEditTriggers);
     //this->setSelectionBehavior(QAbstractItemView::SelectRows);
     this->setMouseTracking(true);//important
-    this->setColumnWidth(0, 150);
+    this->setColumnWidth(0, 200);
     this->setColumnWidth(1, 60);
     this->setColumnWidth(2, 60);
 }
@@ -190,10 +194,10 @@ void CMytableview::mouseMoveEvent(QMouseEvent *event)
         row = modelIndex.row();
         if (col == 1 || col == 2)
         {
-            if (delegate != NULL)
-            {
-                delegate->setpress(true, row);
-            }
+//            if (delegate != NULL)
+//            {
+//                delegate->setpress(true, row);
+//            }
         }
     }
    QTableView::mouseMoveEvent(event);
@@ -219,6 +223,12 @@ void CMytableview::mouseReleaseEvent(QMouseEvent *event)
         {
             col = modelIndex.column();
             row = modelIndex.row();
+            if (delegate != NULL)
+            {
+                bpress = !bpress;
+                delegate->setpress(bpress, row);
+                //setRect0()
+            }
             if (col == 1)
             {
                 struct XSize size;
@@ -229,28 +239,34 @@ void CMytableview::mouseReleaseEvent(QMouseEvent *event)
                      (p.y() >= row * 30 + 4 && p.y() <= row * 30 + size.height - 4 ))
                 {
                     g_Msg.obj = qobject_cast<QObject *>(this);
-                    g_Msg.action = USER_MSG_TABLEVIEW;
+                    if (bpress)
+                    {
+                        g_Msg.action = USER_MSG_TABLEVIEW;
+                    }else
+                    {
+                        g_Msg.action = USER_MSG_CLOSEDEMO;
+                    }
                     g_Msg.val1 = col;
                     g_Msg.val2 = row;
                     call_msg_back(msg_respose, g_Msg);
                 }
             }//if col
-            if (col == 2)
-            {
-                struct XSize size;
-                delegate->GetDemoPixSize(&size);
-                //sprintf(szTmp, "size.x = %d, size.y = %d, size.width = %d, size.height = %d .\n", size.x, size.y, size.width, size.height);
-                //writeLogFile(QtDebugMsg, szTmp);
-                if ( (p.x() >= size.x - 2 && p.x() <= size.x - 2 + size.width) &&
-                     (p.y() >= row * 30 + 4 && p.y() <= row * 30 + size.height - 4 ))
-                {
-                    g_Msg.obj = qobject_cast<QObject *>(this);
-                    g_Msg.action = USER_MSG_CLOSEDEMO;
-                    g_Msg.val1 = col;
-                    g_Msg.val2 = row;
-                    call_msg_back(msg_respose, g_Msg);
-                }
-            }//if col
+//            if (col == 2)
+//            {
+//                struct XSize size;
+//                delegate->GetDemoPixSize(&size);
+//                //sprintf(szTmp, "size.x = %d, size.y = %d, size.width = %d, size.height = %d .\n", size.x, size.y, size.width, size.height);
+//                //writeLogFile(QtDebugMsg, szTmp);
+//                if ( (p.x() >= size.x - 2 && p.x() <= size.x - 2 + size.width) &&
+//                     (p.y() >= row * 30 + 4 && p.y() <= row * 30 + size.height - 4 ))
+//                {
+//                    g_Msg.obj = qobject_cast<QObject *>(this);
+//                    g_Msg.action = USER_MSG_CLOSEDEMO;
+//                    g_Msg.val1 = col;
+//                    g_Msg.val2 = row;
+//                    call_msg_back(msg_respose, g_Msg);
+//                }
+//            }//if col
         }
     }//if ( delegate->m_ntype == 1 )
     QTableView::mouseReleaseEvent(event);

@@ -24,6 +24,9 @@ public:
         return m_ntype;
     };
     void setpress(bool bpres, int row);
+    void setRect0(QRect rect){
+        m_rect0 = rect;
+    };
 private:
     QPixmap favouritePixmap[3];
     QPixmap demoPixmap[2];
@@ -31,6 +34,7 @@ private:
     int  m_ntype;
     bool  m_bpress;
     int   m_row;
+    QRect  m_rect0;
 };
 
 class MyStandardItemModel : public QStandardItemModel
